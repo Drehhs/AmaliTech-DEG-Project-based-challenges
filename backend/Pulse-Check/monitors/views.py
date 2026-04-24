@@ -73,3 +73,34 @@ class MonitorHeartbeatView(APIView):
             'monitor': serializer.data
         }, status=status.HTTP_200_OK)
 
+
+class MonitorPauseView(APIView):
+    """API endpoint to pause a monitor."""
+    
+    def get_object(self, monitor_id):
+        """Get monitor by ID or raise 404."""
+        try:
+            return Monitor.objects.get(id=monitor_id)
+        except Monitor.DoesNotExist:
+            raise NotFound(f"Monitor with ID '{monitor_id}' not found.")
+    
+    def post(self, request, monitor_id):
+        """Pause the monitor to prevent false alarms during maintenance."""
+        monitor = self.get_object(monitor_id)
+        
+        # Check if monitor is already down
+        if monitor.status == 'down':
+            return Response(
+                {'error': 'Monitor is already down. Cannot pause.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Pause the monitor
+        monitor.pause()
+        
+        serializer = MonitorStatusSerializer(monitor)
+        return Response({
+            'message': 'Monitor paused successfully',
+            'monitor': serializer.data
+        }, status=status.HTTP_200_OK)
+

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MonitorCreateView, MonitorHeartbeatView
+from .views import MonitorCreateView, MonitorHeartbeatView, MonitorPauseView
 
 app_name = 'monitors'
 
@@ -9,4 +9,7 @@ urlpatterns = [
     
     # Send heartbeat to reset timer
     path('<str:monitor_id>/heartbeat/', MonitorHeartbeatView.as_view(), name='monitor-heartbeat'),
+    
+    # Pause a monitor
+    path('<str:monitor_id>/pause/', MonitorPauseView.as_view(), name='monitor-pause'),
 ]
