@@ -3,6 +3,7 @@ from celery import shared_task
 from django.utils import timezone
 from django.db import transaction
 from .models import Monitor
+from .services import AlertService
 
 logger = logging.getLogger(__name__)
 
@@ -34,17 +35,13 @@ def check_expired_monitors():
                     # Mark as down and trigger alert
                     monitor.mark_as_down()
                     
-                    # Trigger alert (will be replaced with AlertService in next commit)
-                    alert_data = {
-                        'ALERT': f'Device {monitor.id} is down!',
-                        'time': now.isoformat(),
-                        'alert_email': monitor.alert_email,
-                        'timeout': monitor.timeout,
-                        'last_heartbeat': monitor.last_heartbeat.isoformat() if monitor.last_heartbeat else None
-                    }
-                    
-                    logger.critical(alert_data)
-                    print(f"ALERT: {alert_data}")
+                    # Trigger alert using AlertService
+                    alert_data = AlertService.trigger_alert(
+                        monitor_id=monitor.id,
+                        alert_email=monitor.alert_email,
+                        timeout=monitor.timeout,
+                        last_heartbeat=monitor.last_heartbeat
+                    )
                     
                     alerts_triggered.append(alert_data)
         
