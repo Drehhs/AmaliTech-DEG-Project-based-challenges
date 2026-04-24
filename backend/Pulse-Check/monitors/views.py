@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 from django.db import transaction
 from .models import Monitor
-from .serializers import MonitorCreateSerializer
+from .serializers import MonitorCreateSerializer, MonitorStatusSerializer
 
 
 class MonitorCreateView(APIView):
@@ -40,4 +41,35 @@ class MonitorCreateView(APIView):
                 )
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MonitorHeartbeatView(APIView):
+    """API endpoint to reset the monitor timer (heartbeat)."""
+    
+    def get_object(self, monitor_id):
+        """Get monitor by ID or raise 404."""
+        try:
+            return Monitor.objects.get(id=monitor_id)
+        except Monitor.DoesNotExist:
+            raise NotFound(f"Monitor with ID '{monitor_id}' not found.")
+    
+    def post(self, request, monitor_id):
+        """Reset the countdown timer for a specific monitor."""
+        monitor = self.get_object(monitor_id)
+        
+        # Check if monitor is already down
+        if monitor.status == 'down':
+            return Response(
+                {'error': 'Monitor is already down. Cannot reset timer.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Reset the timer (this also un-pauses if paused)
+        monitor.reset_timer()
+        
+        serializer = MonitorStatusSerializer(monitor)
+        return Response({
+            'message': 'Heartbeat received, timer reset',
+            'monitor': serializer.data
+        }, status=status.HTTP_200_OK)
 
