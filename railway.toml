@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "cd backend/Pulse-Check && gunicorn pulse_check.wsgi"
+releaseCommand = "cd backend/Pulse-Check && python manage.py migrate --noinput"
