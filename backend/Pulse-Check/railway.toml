@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "gunicorn pulse_check.wsgi"
+releaseCommand = "python manage.py migrate --noinput"
