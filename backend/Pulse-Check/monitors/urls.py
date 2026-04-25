@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    MonitorCreateView,
+    MonitorListCreateView,
     MonitorHeartbeatView,
     MonitorPauseView,
     MonitorDetailView,
@@ -11,10 +11,10 @@ from .views import (
 app_name = 'monitors'
 
 urlpatterns = [
-    # Create a new monitor
-    path('', MonitorCreateView.as_view(), name='monitor-create'),
+    # List and create monitors
+    path('', MonitorListCreateView.as_view(), name='monitor-list-create'),
     
-    # List all monitors
+    # List all monitors (with filtering)
     path('list/', MonitorListView.as_view(), name='monitor-list'),
     
     # Get statistics dashboard
